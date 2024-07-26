@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-app-deployment
+  labels:
+    app: example-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: example-app
+  template:
+    metadata:
+      labels:
+        app: example-app
+    spec:
+      containers:
+      - name: example-app
+        image: mroc/example-app
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-app-service
+  labels:
+    app: example-app
+spec:
+  ports:
+  - name: web
+    protocol: TCP
+    port: 4000
+    targetPort: 3000
+  selector:
+    app: example-app
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-app-node-port
+  labels:
+    app: example-app
+spec:
+  ports:
+  - name: web
+    protocol: TCP
+    nodePort: 30002
+    targetPort: 3000
+    port: 4000
+  selector:
+    app: example-app
+  type: NodePort
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: example-app-service-monitor
+  labels:
+    app: example-app
+    # This label lets Prometheus find our service monitor
+    release: prometheus-helm
+spec:
+  jobLabel: app
+  endpoints:
+  - interval: 30s
+    port: web
+    path: /swagger-stats/metrics
+  selector:
+    matchLabels:
+      app: example-app
