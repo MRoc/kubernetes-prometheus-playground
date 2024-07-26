@@ -22,7 +22,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: example-app
+  name: example-app-cluster-id
   labels:
     app: example-app
 spec:
@@ -35,7 +35,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: example-app
+  name: example-app-node-port
   labels:
     app: example-app
 spec:
