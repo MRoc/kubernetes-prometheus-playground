@@ -47,11 +47,13 @@ kubectl get promrule
 
 After running you will be able to:
 
-* Visit `http://localhost:30002` to see the example app.
+* Visit `http://localhost:30010` to see the example app.
 * Visit `http://localhost:30000/targets` to see if the example app is listed inside *Prometheus*.
 * Visit `http://localhost:30000/config` to see the configurations added to *Prometheus* for the example app.
 * Visit `http://localhost:30000/` with `rate(api_all_request_total[1m])` you should be able to see the requests per minute.
 * Visit `http://localhost:30000/rules` to see the rule.
+* Visit `http://localhost:30001` for grafana.
+* Visit `http://localhost:30002` for alert manager.
 
 
 The definition of a *Service Monitor* looks like this:
@@ -100,6 +102,14 @@ spec:
       annotations:
         summary: Prometheus target missing {{ $labels.instance }}
 ```
+
+## 4. Alert Manager
+
+```bash
+kubectl create -f ./alertmanager-config.yaml
+```
+
+Then visit `http://localhost:30002/#/status` to find the configuration listed.
 
 
 ## Resources
