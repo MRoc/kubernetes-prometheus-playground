@@ -62,6 +62,7 @@ metadata:
     # This label lets Prometheus find our service monitor
     release: prometheus-helm
 spec:
+  # This references the label from above and will be used on the prometheus time series "job" label
   jobLabel: app
   endpoints:
   - interval: 30s
@@ -70,3 +71,23 @@ spec:
   selector:
     matchLabels:
       app: example-app
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: example-app-prometheus-rule
+  labels:
+    app: example-app
+    # This label lets Prometheus find our service monitor
+    release: prometheus-helm
+spec:
+  groups:
+  - name: example-app
+    rules:
+    - alert: down
+      expr: up == 0
+      for: 0m
+      labels:
+        severity: critical
+      annotations:
+        summary: Prometheus target missing {{ $labels.instance }}

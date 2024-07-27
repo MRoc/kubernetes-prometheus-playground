@@ -35,13 +35,71 @@ Visit `http://localhost:9090`.
 
 ## 3. Example app
 
-```bash
-kubectl create -f .\example-app.yaml
-```
-
 The YAML creates an example app, a cluster IP, a node port and a *Service Monitor*. Using a *Service Monitor*, we can define a set of targets for *Prometheus* to monitor and scrape. It is a declarative way to define prometheus configs.
 
-Visit `http://localhost:30002` to see the example app. Visit `http://localhost:30000/targets` to see if the example app is listed inside *Prometheus*.
+```bash
+kubectl create -f .\example-app.yaml
+kubectl get servicemonitor
+kubectl get smon
+kubectl get prometheusrules
+kubectl get promrule
+```
+
+After running you will be able to:
+
+* Visit `http://localhost:30002` to see the example app.
+* Visit `http://localhost:30000/targets` to see if the example app is listed inside *Prometheus*.
+* Visit `http://localhost:30000/config` to see the configurations added to *Prometheus* for the example app.
+* Visit `http://localhost:30000/` with `rate(api_all_request_total[1m])` you should be able to see the requests per minute.
+* Visit `http://localhost:30000/rules` to see the rule.
+
+
+The definition of a *Service Monitor* looks like this:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: example-app-service-monitor
+  labels:
+    app: example-app
+    # This label lets Prometheus find our service monitor
+    release: prometheus-helm
+spec:
+  # This references the label from above and will be used on the prometheus time series "job" label
+  jobLabel: app
+  endpoints:
+  - interval: 30s
+    port: web
+    path: /swagger-stats/metrics
+  selector:
+    matchLabels:
+      app: example-app
+```
+
+The definition of a *Rule* looks like this:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: example-app-prometheus-rule
+  labels:
+    app: example-app
+    # This label lets Prometheus find our service monitor
+    release: prometheus-helm
+spec:
+  groups:
+  - name: example-app
+    rules:
+    - alert: down
+      expr: up == 0
+      for: 0m
+      labels:
+        severity: critical
+      annotations:
+        summary: Prometheus target missing {{ $labels.instance }}
+```
 
 
 ## Resources
